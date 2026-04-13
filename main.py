@@ -1,6 +1,7 @@
 import os
 import google.generativeai as genai
-from telegram.ext import Updater, MessageHandler, Filters
+from telegram import Update
+from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
@@ -8,18 +9,16 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel("gemini-pro")
 
-def reply(update, context):
+async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.message.text
+
     try:
         res = model.generate_content(msg)
-        update.message.reply_text(res.text)
+        await update.message.reply_text(res.text)
     except Exception as e:
-        update.message.reply_text(str(e))
+        await update.message.reply_text(str(e))
 
-updater = Updater(TELEGRAM_TOKEN, use_context=True)
-dp = updater.dispatcher
+app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
+app.add_handler(MessageHandler(filters.TEXT, handle))
 
-dp.add_handler(MessageHandler(Filters.text, reply))
-
-updater.start_polling()
-updater.idle()
+app.run_polling()
