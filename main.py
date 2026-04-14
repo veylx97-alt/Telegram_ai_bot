@@ -22,3 +22,6 @@ app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
 app.add_handler(MessageHandler(filters.TEXT, handle))
 
 app.run_polling()
+import sys
+print(sys.version)
+print(sys.modules.keys())
